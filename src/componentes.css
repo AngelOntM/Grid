@@ -1,0 +1,74 @@
+.containerPrincipal {
+    position: absolute;
+    left: 60%;
+    top: 50%;
+    width: 30%;
+    transform: translate(-50%, -50%);
+    padding: 0px 0px 0px 0px;
+    background-color: white;
+}
+
+html,
+body {
+    padding: 20px;
+}
+
+img {
+    width: 35px;
+    height: 35px;
+}
+
+.containerSecundario {
+    text-align: center;
+}
+
+.containerTres {
+    margin-left: 50%;
+}
+
+.perro {
+    width: 80%;
+    height: 100%;
+    position: absolute;
+    margin-left: -80%;
+}
+
+.tituloL {
+    color: purple;
+    font-weight: bold;
+    font-size: 50px;
+}
+
+.perroRegistro {
+    padding: 100px;
+}
+
+.btn-transparente {
+    cursor: pointer;
+    background-color: transparent;
+    border-color: transparent;
+}
+
+.ant-table table {
+    font-size: 15px;
+}
+
+.react-resizable {
+    position: relative;
+    background-clip: padding-box;
+}
+
+.react-resizable-handle {
+    position: absolute;
+    width: 10px;
+    height: 100%;
+    bottom: 0;
+    right: -5px;
+    cursor: col-resize;
+    z-index: 1;
+}
+
+.dragHandler:hover {
+    cursor: move;
+    background-color: #ccc;
+}

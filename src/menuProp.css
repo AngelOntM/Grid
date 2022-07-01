@@ -1,0 +1,37 @@
+#components-layout-demo-responsive .logo {
+    height: 32px;
+    margin: 16px;
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.site-layout-sub-header-background {
+    background: #fff;
+}
+
+.site-layout-background {
+    background: #fff;
+}
+
+.layout {
+    height: 970px;
+}
+
+.nav-color {
+    background-color: rgb(62, 62, 255);
+    height: 45px;
+    color: white;
+}
+
+.sider-style {
+    background-color: white;
+    color: white;
+}
+
+.user-type {
+    font-size: 30px;
+    background-color: rgb(255, 199, 95);
+}
+
+.ant-btn {
+    margin: 0;
+}
