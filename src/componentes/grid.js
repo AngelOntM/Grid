@@ -1,11 +1,12 @@
-import { Button, Col, Input, Modal, Row, Table, Dropdown, Menu, Checkbox } from "antd";
+import { Button, Col, Input, Modal, Row, Table, Dropdown, Menu, Checkbox, Space } from "antd";
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { EditOutlined, DeleteOutlined } from '@ant-design/icons'
 import '../componentes.css'
 import ReactDragListView from "react-drag-listview";
-import { UnorderedListOutlined } from '@ant-design/icons';
+import { UnorderedListOutlined, SearchOutlined, ReloadOutlined } from '@ant-design/icons';
 import 'antd/dist/antd.css';
+import Highlighter from 'react-highlight-words';
 
 
 const urlApi = ' http://127.0.0.1:4444/mascota';
@@ -20,7 +21,95 @@ function Grid() {
     const [deleteMany, setDeleteMany] = useState(true)
     const [selectedRowKeys, setSelectedRowKeys] = useState([])
 
+    const [dropdownVisible, setDropdownVisible] = useState(false);
+    const [searchText, setSearchText] = useState('');
+    const [searchedColumn, setSearchedColumn] = useState('');
+    const searchInput = useRef(null);
 
+    const handleSearch = (selectedKeys, confirm, dataIndex) => {
+        confirm();
+        setSearchText(selectedKeys[0]);
+        setSearchedColumn(dataIndex);
+    };
+
+    const handleReset = (clearFilters) => {
+        clearFilters();
+        setSearchText('');
+    };
+
+
+    const getColumnSearchProps = (dataIndex, name) => ({
+        filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
+            <div
+                style={{
+                    padding: 8,
+                }}
+            >
+                <Input
+                    ref={searchInput}
+                    placeholder={`Buscar ${name}`}
+                    value={selectedKeys[0]}
+                    onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+                    onPressEnter={() => handleSearch(selectedKeys, confirm, dataIndex)}
+                    style={{
+                        marginBottom: 8,
+                        display: 'block',
+                    }}
+                />
+                <Space>
+                    <Button
+                        type="primary"
+                        onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
+                        icon={<SearchOutlined />}
+                        size="small"
+                        style={{
+                            width: 90,
+                        }}
+                    >
+                        Buscar
+                    </Button>
+                    <Button
+                        onClick={() => clearFilters && handleReset(clearFilters) && handleSearch(selectedKeys, confirm, dataIndex)}
+                        size="small"
+                        type="danger"
+                        style={{
+                            width: 120,
+                        }}
+                    >
+                        Limpiar Filtros
+                    </Button>
+                </Space>
+            </div>
+        ),
+        filterIcon: (filtered) => (
+            <SearchOutlined
+                style={{
+                    color: filtered ? '#1890ff' : undefined,
+                }}
+            />
+        ),
+        onFilter: (value, record) =>
+            record[dataIndex].toString().toLowerCase().includes(value.toLowerCase()),
+        onFilterDropdownVisibleChange: (visible) => {
+            if (visible) {
+                setTimeout(() => searchInput.current?.select(), 100);
+            }
+        },
+        render: (text) =>
+            searchedColumn === dataIndex ? (
+                <Highlighter
+                    highlightStyle={{
+                        backgroundColor: '#ffc069',
+                        padding: 0,
+                    }}
+                    searchWords={[searchText]}
+                    autoEscape
+                    textToHighlight={text ? text.toString() : ''}
+                />
+            ) : (
+                text
+            ),
+    });
 
     useEffect(() => {
         traerTabla()
@@ -57,12 +146,20 @@ function Grid() {
     }
 
     const deleteManySelected = () => {
-        selectedRowKeys.forEach((key) => {
-            axios.delete(urlApi + "/" + key.MAS_NUMCTRL).then((response) => {
-                traerTabla()
-            })
+        Modal.confirm({
+            title: 'Estás seguro que deseas eliminar estos registros?',
+            okText: 'Confirmar',
+            okType: 'danger',
+            cancelText: 'Cancelar',
+            onOk: () => {
+                selectedRowKeys.forEach((key) => {
+                    axios.delete(urlApi + "/" + key.MAS_NUMCTRL).then((response) => {
+                        traerTabla()
+                    })
+                })
+                setDeleteMany(true)
+            }
         })
-        setDeleteMany(true)
     }
 
     const onUpdateRegister = () => {
@@ -88,6 +185,7 @@ function Grid() {
             dataIndex: 'MAS_NOMBRE',
             key: 'MAS_NOMBRE',
             sorter: (a, b) => a.MAS_NOMBRE.localeCompare(b.MAS_NOMBRE),
+            ...getColumnSearchProps('MAS_NOMBRE', 'Mascota'),
             visible: true
         },
         {
@@ -96,6 +194,7 @@ function Grid() {
             dataIndex: 'PRO_NOMBRE',
             key: 'PRO_NOMBRE',
             sorter: (a, b) => a.PRO_NOMBRE.localeCompare(b.PRO_NOMBRE),
+            ...getColumnSearchProps('PRO_NOMBRE', 'Propietario'),
             visible: true
         },
         {
@@ -104,6 +203,7 @@ function Grid() {
             dataIndex: 'MAS_FECHANAC',
             key: 'MAS_FECHANAC',
             sorter: (a, b) => a.MAS_FECHANAC.localeCompare(b.MAS_FECHANAC),
+            ...getColumnSearchProps('MAS_FECHANAC', 'Fecha de nacimiento'),
             visible: true
         },
         {
@@ -112,6 +212,7 @@ function Grid() {
             dataIndex: 'MAS_RAZA',
             key: 'MAS_RAZA',
             sorter: (a, b) => a.MAS_RAZA.localeCompare(b.MAS_RAZA),
+            ...getColumnSearchProps('MAS_RAZA', 'Raza'),
             visible: true
         },
         {
@@ -120,14 +221,14 @@ function Grid() {
             dataIndex: 'MAS_SEXO',
             key: 'MAS_SEXO',
             sorter: (a, b) => a.MAS_SEXO.localeCompare(b.MAS_SEXO),
+            ...getColumnSearchProps('MAS_SEXO', 'Sexo'),
             visible: true
         },
         {
-            orden: 6,
             title: <span className="dragHandler">Accion</span>,
             key: 'ASU',
-            dataIndex: 'ASU',
-            width: '10%',
+            width: '8%',
+            align: 'center',
             render: (record) => {
                 return <>
                     <div>
@@ -192,14 +293,17 @@ function Grid() {
     const onClick = ({ key }) => {
         const newColumns = columns
         for (var i = 0; i < newColumns.length; i++) {
-            console.log(newColumns[i].dataIndex)
             if (newColumns[i].dataIndex === key) {
                 newColumns[i].visible = !newColumns[i].visible;
             }
         }
-        console.log(newColumns)
         setColumns1(newColumns.filter(column => column.visible));
     };
+
+
+    const handleVisibleChange = (flag) => {
+        setDropdownVisible(flag);
+    }
 
     const menu = (
         <Menu
@@ -233,17 +337,14 @@ function Grid() {
 
         <div >
             <Row>
-                <Col span={6} style={{ padding: 5 }}>
-                    <Input value={nombre} placeholder="Nombre" onChange={(x) => {
-                        setNombre(x.target.value)
-                    }} />
+                <Col span={21} >
+
                 </Col>
-                <Col span={16} style={{ padding: 5 }}>
-                    <Button type="danger" htmlType="submit" onClick={() => {
-                        setNombre("")
-                        setBY("ASC")
+                <Col span={1} >
+                    <Button onClick={() => {
+                        traerTabla()
                     }}>
-                        Limpiar Filtros
+                        <ReloadOutlined />
                     </Button>
                 </Col>
                 <Col span={1} >
@@ -254,7 +355,8 @@ function Grid() {
                     </Button>
                 </Col>
                 <Col span={1}>
-                    <Dropdown overlay={menu} placement="bottomLeft">
+                    <Dropdown overlay={menu} onVisibleChange={handleVisibleChange}
+                        visible={dropdownVisible} placement="bottomLeft">
                         <Button><UnorderedListOutlined style={{ fontSize: '16px', color: '#08c' }} /></Button>
                     </Dropdown>
                 </Col>
